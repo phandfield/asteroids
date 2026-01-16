@@ -1,7 +1,8 @@
 from constants import PLAYER_SPEED, PLAYER_TURN_SPEED, PLAYER_SHOOT_SPEED
 import pygame
 from shot import Shot
-from circleshape import CircleShape  # if Player inherits CircleShape
+from circleshape import CircleShape
+
 
 class Player(CircleShape):
     def __init__(self, x, y):
@@ -20,23 +21,33 @@ class Player(CircleShape):
     def update(self, dt):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
-            self.rotate(dt, direction=-1)  # left
+            self.rotate(dt, direction=-1)
         if keys[pygame.K_d]:
-            self.rotate(dt, direction=1)   # right
+            self.rotate(dt, direction=1)
         if keys[pygame.K_w]:
-            self.move(dt, forward=True)    # forward
+            self.move(dt, forward=True)
         if keys[pygame.K_s]:
-            self.move(dt, forward=False)   # backward
+            self.move(dt, forward=False)
         if keys[pygame.K_SPACE]:
             self.shoot()
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 255, 255), self.position, self.radius, 2)
+        # Ship shape (local space, facing up)
+        points = [
+            pygame.Vector2(0, 20),     # nose
+            pygame.Vector2(-10, -10),  # left wing
+            pygame.Vector2(10, -10),   # right wing
+        ]
+
+        # Rotate and translate to world space
+        rotated_points = [
+            p.rotate(self.rotation) + self.position for p in points
+        ]
+
+        pygame.draw.polygon(screen, "white", rotated_points, 2)
 
     def shoot(self):
         shot = Shot(self.position.x, self.position.y)
 
-        direction = pygame.Vector2(0, 1)
-        direction = direction.rotate(self.rotation)
-
+        direction = pygame.Vector2(0, 1).rotate(self.rotation)
         shot.velocity = direction * PLAYER_SHOOT_SPEED
